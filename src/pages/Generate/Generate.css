@@ -1,0 +1,185 @@
+.gen-ready {
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+}
+.gen-ready-card {
+  max-width: 560px;
+  width: 100%;
+  border-radius: var(--radius-xl);
+  padding: 48px 40px;
+  text-align: center;
+}
+.gen-ready-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  animation: float 3s ease-in-out infinite;
+}
+.gen-summary {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin: 32px 0;
+}
+.gen-stat {
+  padding: 20px 28px;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  transition: var(--transition);
+}
+.gen-stat:hover { border-color: var(--border-gold); }
+.gen-stat-val {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.gen-stat-lbl {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+.gen-cta { width: 100%; padding: 16px; font-size: 1.05rem; }
+
+/* ── Progress ── */
+.gen-progress-wrap {
+  display: flex;
+  justify-content: center;
+  padding-top: 40px;
+}
+.gen-progress-card {
+  max-width: 500px;
+  width: 100%;
+  border-radius: var(--radius-xl);
+  padding: 48px 40px;
+  text-align: center;
+}
+.gen-spinner {
+  width: 56px;
+  height: 56px;
+  border: 4px solid rgba(245,200,66,0.15);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  margin: 0 auto 24px;
+}
+.gen-progress-card h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+.gen-current {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+.gen-current strong { color: var(--gold); }
+.gen-bar-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.gen-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--border-glass);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.gen-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+.gen-pct { font-size: 0.85rem; font-weight: 700; color: var(--gold); width: 36px; text-align: right; }
+.gen-note { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+
+/* ── Done: Gallery ── */
+.gen-done-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.gen-done-actions { display: flex; gap: 12px; align-items: center; flex-shrink: 0; }
+
+.cert-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.cert-card {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: var(--transition);
+}
+.cert-card:hover { border-color: var(--border-gold); transform: translateY(-3px); box-shadow: var(--shadow-gold); }
+.cert-card.cert-error { border-color: rgba(239,68,68,0.2); }
+
+.cert-thumb {
+  width: 100%;
+  aspect-ratio: 842 / 595;
+  overflow: hidden;
+  background: #0d1226;
+  border-bottom: 1px solid var(--border-glass);
+}
+.cert-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: var(--transition);
+}
+.cert-card:hover .cert-thumb img { transform: scale(1.02); }
+
+.cert-error-msg {
+  padding: 16px;
+  color: var(--error);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.cert-info {
+  padding: 14px 16px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cert-name { font-size: 0.95rem; font-weight: 700; }
+.cert-id { font-size: 0.7rem; }
+
+.cert-actions {
+  display: flex;
+  gap: 1px;
+  border-top: 1px solid var(--border-glass);
+  background: var(--border-glass);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  overflow: hidden;
+}
+.cert-action-btn {
+  flex: 1;
+  padding: 10px 6px;
+  background: var(--bg-secondary);
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.cert-action-btn:hover { background: var(--gold-dim); color: var(--gold); }
+
+@media (max-width: 768px) {
+  .gen-ready-card { padding: 32px 24px; }
+  .gen-done-header { flex-direction: column; }
+  .gen-done-actions { width: 100%; }
+  .gen-done-actions button { flex: 1; }
+  .cert-gallery { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,39 @@
+.loader-ring {
+  width: 42px;
+  height: 42px;
+  border: 3px solid rgba(245, 200, 66, 0.15);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.85s linear infinite;
+  display: inline-block;
+}
+
+.loader-fullscreen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loader-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.loader-brand {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
