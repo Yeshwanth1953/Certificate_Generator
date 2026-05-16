@@ -21,6 +21,7 @@ import "./Recipients.css";
 
 const STEP_LABELS = ["Upload", "Customize", "Recipients", "Generate"];
 
+
 // Contact columns always shown in manual entry (not tied to template placeholders)
 // These are used for email delivery — email is required to send certificates
 const CONTACT_COLS = [
@@ -147,9 +148,9 @@ export default function Recipients() {
     ];
     const exampleVals = [
       ...placeholders.map(p => {
-        if (p.key === "name")   return "John Doe";
+        if (p.key === "name") return "John Doe";
         if (p.key === "course") return "React Development";
-        if (p.key === "date")   return "January 1, 2025";
+        if (p.key === "date") return "January 1, 2025";
         if (p.key === "issuer") return "CertifyPro";
         return "example";
       }),
@@ -270,7 +271,7 @@ export default function Recipients() {
               style={{ display: "none" }}
               onChange={e => handleCSVUpload(e.target.files[0])}
             />
-            {csvError   && <div className="recip-alert alert-error">⚠ {csvError}</div>}
+            {csvError && <div className="recip-alert alert-error">⚠ {csvError}</div>}
             {csvSuccess && <div className="recip-alert alert-success">{csvSuccess}</div>}
           </div>
         )}
