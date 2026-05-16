@@ -22,6 +22,7 @@ import Customize from "./pages/Customize/Customize";
 import Recipients from "./pages/Recipients/Recipients";
 import Generate from "./pages/Generate/Generate";
 import Verify from "./pages/Verify/Verify";
+import Portal from "./pages/Portal/Portal";
 import Profile from "./pages/Profile/Profile";
 
 export default function App() {
@@ -34,6 +35,8 @@ export default function App() {
           <Route path="/" element={<Auth />} />
           {/* Verify page is public so QR code works for anyone */}
           <Route path="/verify" element={<Verify />} />
+          {/* Participant portal — public search by certificate ID */}
+          <Route path="/portal" element={<Portal />} />
 
           {/* ── Protected Routes (login required) ─────────────── */}
           <Route path="/home" element={

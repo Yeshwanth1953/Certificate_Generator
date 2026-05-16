@@ -18,13 +18,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import "./Verify.css";
 
 export default function Verify() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const certId = searchParams.get("id"); // Read ?id=... from URL
 
   const [status, setStatus] = useState("loading"); // loading | verified | invalid | no-id
@@ -74,10 +75,18 @@ export default function Verify() {
 
       {/* Header */}
       <header className="verify-header">
+        <button
+          onClick={() => navigate(-1)}
+          className="verify-back-btn"
+          title="Go back"
+        >
+          ← Back
+        </button>
         <div className="verify-logo">
           <span>⬡</span>
           <span>Certify<span className="gold">Pro</span></span>
         </div>
+        <div style={{ width: "80px" }} />
       </header>
 
       <div className="verify-container">

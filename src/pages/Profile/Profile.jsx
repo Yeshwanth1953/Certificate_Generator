@@ -1,4 +1,4 @@
-// src/pages/Profile/Profile.jsx
+﻿// src/pages/Profile/Profile.jsx
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // WHAT THIS PAGE DOES:
 // Shows the logged-in user's profile and generation history.
@@ -18,8 +18,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { doc, updateDoc, collection, query, where, orderBy, getDocs } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import { useAuth } from "../../context/AuthContext";
 import Navbar from "../../components/Navbar/Navbar";
@@ -65,13 +64,22 @@ export default function Profile() {
   const loadHistory = async () => {
     setLoadingHistory(true);
     try {
+      // NOTE: Using where() + orderBy() together requires a Firestore composite
+      // index which is not guaranteed to exist. Fetch with only where() and sort
+      // client-side to avoid a silent empty-result error from a missing index.
       const q = query(
         collection(db, "certificates"),
-        where("issuerUID", "==", user.uid),
-        orderBy("issuedAt", "desc")
+        where("issuerUID", "==", user.uid)
       );
       const snap = await getDocs(q);
-      setHistory(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Sort newest first client-side
+      docs.sort((a, b) => {
+        const at = a.issuedAt?.toMillis?.() ?? 0;
+        const bt = b.issuedAt?.toMillis?.() ?? 0;
+        return bt - at;
+      });
+      setHistory(docs);
     } catch (err) {
       console.error("Failed to load history:", err);
     }
@@ -97,20 +105,23 @@ export default function Profile() {
   };
 
   // â”€â”€ UPLOAD PROFILE PHOTO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const handlePhotoUpload = async (file) => {
+  const handlePhotoUpload = (file) => {
     if (!file || !file.type.startsWith("image/")) return;
+    if (file.size > 2 * 1024 * 1024) return showToast("Photo must be under 2MB.", "error");
     setUploadingPhoto(true);
-    try {
-      const storageRef = ref(storage, `avatars/${user.uid}/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      const photoURL = await getDownloadURL(storageRef);
-      await updateDoc(doc(db, "users", user.uid), { photoURL });
-      await refreshProfile();
-      showToast("Profile photo updated!");
-    } catch {
-      showToast("Photo upload failed.", "error");
-    }
-    setUploadingPhoto(false);
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        await updateDoc(doc(db, "users", user.uid), { photoURL: e.target.result });
+        await refreshProfile();
+        showToast("Profile photo updated!");
+      } catch {
+        showToast("Failed to save photo.", "error");
+      }
+      setUploadingPhoto(false);
+    };
+    reader.onerror = () => { showToast("Failed to read file.", "error"); setUploadingPhoto(false); };
+    reader.readAsDataURL(file);
   };
 
   // â”€â”€ LOGOUT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

@@ -21,6 +21,13 @@ import "./Recipients.css";
 
 const STEP_LABELS = ["Upload", "Customize", "Recipients", "Generate"];
 
+// Contact columns always shown in manual entry (not tied to template placeholders)
+// These are used for email delivery — email is required to send certificates
+const CONTACT_COLS = [
+  { key: "email", label: "Email", type: "email", placeholder: "participant@example.com", required: false },
+  { key: "phone", label: "Phone (optional)", type: "tel", placeholder: "+91 9876543210", required: false },
+];
+
 export default function Recipients() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -28,8 +35,7 @@ export default function Recipients() {
   // Load placeholder keys from previous step (e.g., [{key:"name", label:"Recipient Name"}])
   const placeholders = JSON.parse(localStorage.getItem("cp_placeholders") || "[]");
 
-  // Recipients list — each item is an object with keys matching placeholders
-  // e.g., { name: "Alice", course: "React Bootcamp", date: "2025-01-01" }
+  // Recipients list — each item is an object with keys matching placeholders + email + phone
   const [rows, setRows] = useState([createEmptyRow(placeholders)]);
 
   const [csvError, setCsvError] = useState("");
@@ -37,9 +43,11 @@ export default function Recipients() {
   const [activeTab, setActiveTab] = useState("manual"); // "manual" | "csv"
   const [error, setError] = useState("");
 
-  // Create an empty row object with all placeholder keys set to ""
+  // Create an empty row object with all placeholder keys + contact fields set to ""
   function createEmptyRow(pKeys) {
-    return Object.fromEntries((pKeys || []).map(p => [p.key, ""]));
+    const base = Object.fromEntries((pKeys || []).map(p => [p.key, ""]));
+    CONTACT_COLS.forEach(c => { base[c.key] = ""; });
+    return base;
   }
 
   // ── MANUAL ENTRY ─────────────────────────────────────────
@@ -78,7 +86,7 @@ export default function Recipients() {
 
         const parsedRows = results.data;
 
-        // Validate that CSV has all required columns
+        // Validate that CSV has all required columns (placeholders only, not contact cols)
         const csvKeys = Object.keys(parsedRows[0] || {}).map(k => k.trim().toLowerCase());
         const missingKeys = placeholders
           .filter(p => p.key !== "id") // "id" is auto-generated, not needed in CSV
@@ -97,6 +105,8 @@ export default function Recipients() {
           Object.entries(row).forEach(([k, v]) => {
             normalized[k.trim().toLowerCase()] = (v || "").trim();
           });
+          // Ensure contact cols exist even if not in CSV
+          CONTACT_COLS.forEach(c => { if (!normalized[c.key]) normalized[c.key] = ""; });
           return normalized;
         });
 
@@ -130,15 +140,23 @@ export default function Recipients() {
 
   // ── DOWNLOAD CSV TEMPLATE ────────────────────────────────
   const downloadTemplate = () => {
-    const headers = placeholders.map(p => p.key).join(",");
-    const example = placeholders.map(p => {
-      if (p.key === "name")   return "John Doe";
-      if (p.key === "course") return "React Development";
-      if (p.key === "date")   return "January 1, 2025";
-      if (p.key === "issuer") return "CertifyPro";
-      return "example";
-    }).join(",");
-    const csv = `${headers}\n${example}`;
+    // Include both template placeholder columns AND contact columns
+    const allCols = [
+      ...placeholders.map(p => p.key),
+      ...CONTACT_COLS.map(c => c.key),
+    ];
+    const exampleVals = [
+      ...placeholders.map(p => {
+        if (p.key === "name")   return "John Doe";
+        if (p.key === "course") return "React Development";
+        if (p.key === "date")   return "January 1, 2025";
+        if (p.key === "issuer") return "CertifyPro";
+        return "example";
+      }),
+      "john@example.com",  // email
+      "+91 9876543210",    // phone
+    ];
+    const csv = `${allCols.join(",")}\n${exampleVals.join(",")}`;
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -163,8 +181,31 @@ export default function Recipients() {
         <div className="recip-header animate-fade">
           <h1 className="section-title">Add <span>Recipients</span></h1>
           <p className="section-sub">
-            Add the people who will receive certificates. You can type manually or upload a CSV file.
+            Add participant details. <strong>Name</strong> appears on the certificate.
+            <strong> Email</strong> is used to send them their certificate link.
           </p>
+        </div>
+
+        {/* Name Zone Info Banner */}
+        <div className="recip-info-banner animate-fade" style={{
+          background: "rgba(245,200,66,0.08)",
+          border: "1px solid rgba(245,200,66,0.3)",
+          borderRadius: "12px",
+          padding: "14px 18px",
+          display: "flex",
+          alignItems: "flex-start",
+          gap: "12px",
+          marginBottom: "20px",
+          fontSize: "0.875rem",
+          color: "#f5c842",
+          lineHeight: "1.5",
+        }}>
+          <span style={{ fontSize: "1.2rem", flexShrink: 0 }}>📍</span>
+          <span>
+            <strong>Name Zone active</strong> — The <strong>name</strong> column here will automatically
+            appear on each certificate at the position you defined in the editor.
+            You don&apos;t need to type names in the editor at all.
+          </span>
         </div>
 
         {/* Placeholder Guide */}
@@ -175,6 +216,8 @@ export default function Recipients() {
               {placeholders.map(p => (
                 <span key={p.key} className="badge badge-purple">{p.label}</span>
               ))}
+              <span className="badge" style={{ background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)" }}>📧 email</span>
+              <span className="badge" style={{ background: "rgba(99,102,241,0.15)", color: "#818cf8", border: "1px solid rgba(99,102,241,0.3)" }}>📱 phone</span>
             </div>
           </div>
         )}
@@ -205,8 +248,10 @@ export default function Recipients() {
               </button>
             </div>
             <p className="csv-hint">
-              Your CSV must have these column headers (lowercase):
-              <strong> {placeholders.map(p => p.key).join(", ")}</strong>
+              Required columns: <strong>{placeholders.map(p => p.key).join(", ")}</strong>
+              <span style={{ color: "#22c55e" }}>, email</span>
+              <span style={{ color: "#818cf8" }}>, phone</span>
+              <span style={{ color: "var(--text-muted)" }}> (phone optional)</span>
             </p>
             <div
               className="csv-drop"
@@ -238,9 +283,13 @@ export default function Recipients() {
                 <thead>
                   <tr>
                     <th>#</th>
+                    {/* Template placeholder columns */}
                     {placeholders.map(p => (
                       <th key={p.key}>{p.label}</th>
                     ))}
+                    {/* Always-present contact columns */}
+                    <th style={{ color: "#22c55e" }}>📧 Email</th>
+                    <th style={{ color: "#818cf8" }}>📱 Phone <span style={{ fontWeight: 400, opacity: 0.6 }}>(optional)</span></th>
                     <th></th>
                   </tr>
                 </thead>
@@ -248,6 +297,7 @@ export default function Recipients() {
                   {rows.map((row, rIdx) => (
                     <tr key={rIdx}>
                       <td className="row-num">{rIdx + 1}</td>
+                      {/* Template fields */}
                       {placeholders.map(p => (
                         <td key={p.key}>
                           <input
@@ -256,6 +306,18 @@ export default function Recipients() {
                             value={row[p.key] || ""}
                             placeholder={`Enter ${p.label}`}
                             onChange={e => updateRow(rIdx, p.key, e.target.value)}
+                          />
+                        </td>
+                      ))}
+                      {/* Contact fields */}
+                      {CONTACT_COLS.map(c => (
+                        <td key={c.key}>
+                          <input
+                            className="table-input"
+                            type={c.type}
+                            value={row[c.key] || ""}
+                            placeholder={c.placeholder}
+                            onChange={e => updateRow(rIdx, c.key, e.target.value)}
                           />
                         </td>
                       ))}
@@ -283,6 +345,11 @@ export default function Recipients() {
           <div className="recip-summary glass">
             <span>📋</span>
             <span><strong>{rows.length}</strong> recipient{rows.length !== 1 ? "s" : ""} ready</span>
+            {rows.some(r => r.email?.trim()) && (
+              <span style={{ fontSize: "0.8rem", color: "#22c55e", marginLeft: 8 }}>
+                · {rows.filter(r => r.email?.trim()).length} with email
+              </span>
+            )}
           </div>
           <button className="btn-primary recip-cta" onClick={handleContinue}>
             Generate {rows.length} Certificate{rows.length !== 1 ? "s" : ""} →
@@ -292,3 +359,4 @@ export default function Recipients() {
     </div>
   );
 }
+

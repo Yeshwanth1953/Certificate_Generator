@@ -25,6 +25,102 @@
   border-bottom: 1px solid var(--border-glass);
 }
 
+/* ── Compact step bar for sidebar ── */
+.step-bar-sidebar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 0 6px;
+  width: 100%;
+}
+.sbs-item {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+.sbs-circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--border-glass);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.sbs-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border-glass);
+}
+.sbs-item.done  .sbs-circle { background: var(--success); border-color: var(--success); color: #000; }
+.sbs-item.done  .sbs-line   { background: var(--gold); }
+.sbs-item.active .sbs-circle { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); box-shadow: 0 0 0 4px rgba(245,200,66,0.1); }
+.step-labels-row {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-glass);
+  margin-bottom: 2px;
+}
+.sbs-label {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-align: center;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sbs-label.active { color: var(--gold); font-weight: 700; }
+.sbs-label.done   { color: var(--success); }
+
+/* ── Canvas size grid ── */
+.size-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.size-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+  gap: 2px;
+}
+.size-btn:hover {
+  border-color: var(--border-gold);
+  background: var(--gold-dim);
+}
+.size-btn.active {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+}
+.size-btn-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.size-btn.active .size-btn-label { color: var(--gold); }
+.size-btn-desc {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+
 .cust-section {
   padding: 14px 0;
   border-bottom: 1px solid var(--border-glass);
@@ -144,12 +240,14 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .canvas-scaler {
   box-shadow: 0 20px 60px rgba(0,0,0,0.6);
   border-radius: 4px;
+  flex-shrink: 0;
 }
 
 .canvas-loading {
@@ -170,4 +268,111 @@
   background: var(--bg-card);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-full);
+}
+
+/* -- Gradient presets -- */
+.gradient-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+.gradient-btn {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-sm);
+  padding: 10px 4px;
+  cursor: pointer;
+  font-size: 0.65rem;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: var(--transition);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+.gradient-btn:hover { transform: scale(1.05); border-color: var(--gold); }
+
+/* -- Shape Tools -- */
+.shape-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+.shape-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.shape-btn:hover { border-color: var(--border-gold); color: var(--gold); background: var(--gold-dim); }
+.shape-btn span:first-child { font-size: 1rem; }
+
+/* -- Logo upload button -- */
+.logo-upload-btn {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1.5px dashed var(--border-glass);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-bottom: 6px;
+  font-family: 'Inter', sans-serif;
+}
+.logo-upload-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+/* -- QR toggle -- */
+.qr-toggle-section { padding: 12px 0; }
+.qr-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  font-weight: 500;
+}
+.qr-checkbox {
+  width: 16px; height: 16px;
+  accent-color: var(--gold);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* -- Fix: Font select dropdown always visible (dark bg, light text) -- */
+.cust-sidebar select.input-field,
+.cust-sidebar select.toolbar-select {
+  background-color: var(--bg-secondary, #0f1629);
+  color: var(--text-primary, #e8eaf0);
+  border-color: var(--border-glass);
+}
+.cust-sidebar select.input-field option,
+.cust-sidebar select.toolbar-select option {
+  background-color: #131c35;
+  color: #e8eaf0;
+}
+.cust-sidebar select.input-field optgroup,
+.cust-sidebar select.toolbar-select optgroup {
+  background-color: #0a1020;
+  color: var(--gold, #f5c842);
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+/* -- Name Zone section highlight -- */
+.name-zone-section {
+  background: rgba(245, 200, 66, 0.03);
+  border-radius: var(--radius-md);
+  padding: 14px 10px !important;
+  border: 1px solid rgba(245, 200, 66, 0.12) !important;
+  border-bottom: 1px solid rgba(245, 200, 66, 0.12) !important;
+  margin-bottom: 4px;
 }

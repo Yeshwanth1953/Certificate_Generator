@@ -183,3 +183,12 @@
   .gen-done-actions button { flex: 1; }
   .cert-gallery { grid-template-columns: 1fr; }
 }
+
+/* -- View PDF button (primary accent) -- */
+.cert-view-btn {
+  background: var(--gold-dim) !important;
+  border-color: var(--gold) !important;
+  color: var(--gold) !important;
+  font-weight: 700;
+}
+.cert-view-btn:hover { background: var(--gold) !important; color: #0a0a14 !important; }
