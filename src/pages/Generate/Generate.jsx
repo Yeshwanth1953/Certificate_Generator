@@ -80,17 +80,23 @@ export default function Generate() {
         setCurrentName(recipientName);
         setProgress(Math.round((i / recipients.length) * 100));
 
+        // Helper: tag errors with step name for easier debugging
+        const log = (stepName) => console.log(`[Generate] ${recipientName}: ${stepName}`);
+
         // 1. Generate unique certificate ID
+        log("Generating cert ID");
         const certId = crypto.randomUUID();
         const verifyUrl = `${VERIFY_BASE}?id=${certId}`;
 
         // 2. Generate QR code as base64 PNG — high resolution for HD output
+        log("Generating QR code");
         const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
           width: 400, margin: 1,
           color: { dark: "#000000", light: "#ffffff" },
         });
 
         // 3. Create off-screen Fabric canvas
+        log("Creating Fabric canvas");
         const tempEl = document.createElement("canvas");
         tempEl.width  = size.w;
         tempEl.height = size.h;
@@ -101,18 +107,20 @@ export default function Generate() {
         });
 
         // 4. Load saved canvas config — Fabric.js v7 returns a Promise.
-        //    IMPORTANT: Do NOT pass a callback here. In Fabric v7 the second
-        //    parameter is a per-object *reviver*, NOT a completion callback.
-        //    Passing () => resolve() as the reviver causes it to be called for
-        //    the FIRST object loaded and resolves before the rest finish,
-        //    so getObjects() returns an empty array and text is never replaced.
-        await fCanvas.loadFromJSON(canvasConfig);
+        //    Strip any stored backgroundImage from the JSON first to avoid
+        //    data-URL bloat / Fabric v7 decode errors. We re-apply the
+        //    background from cp_template_url below.
+        log("Loading canvas JSON");
+        const cleanConfig = { ...canvasConfig };
+        delete cleanConfig.backgroundImage;
+        await fCanvas.loadFromJSON(cleanConfig);
 
         // 5. Force-set the background image AFTER loadFromJSON so it always
         //    fills the canvas exactly regardless of saved scale values.
         //    This fixes a bug where scaleToWidth+scaleToHeight combo stored
         //    wrong scale in the JSON, causing partial template in the PDF.
         if (templateURL) {
+          log("Setting background image");
           try {
             const bgImg = await fabric.Image.fromURL(templateURL, { crossOrigin: "anonymous" });
             bgImg.set({
@@ -128,6 +136,7 @@ export default function Generate() {
         }
 
         // 6. Replace {{placeholder}} text with real recipient data
+        log("Replacing placeholders");
         // CRITICAL FIX: Fabric.js v7 uses PascalCase type names ("Textbox","IText","Text").
         // Checking lowercase ("textbox","i-text","text") NEVER matched in v7
         // which is why recipient names were NOT appearing in the generated certificate.
@@ -148,6 +157,7 @@ export default function Generate() {
         });
 
         // 7. Add QR code at user-defined position (from cp_qr_zone) or default bottom-right
+        log("Adding QR code");
         const addQR = localStorage.getItem("cp_add_qr") !== "false";
         if (addQR) {
           const qrZone = JSON.parse(localStorage.getItem("cp_qr_zone") || "null");
@@ -172,10 +182,12 @@ export default function Generate() {
         //    multiplier:3 = ~300 DPI equivalent for A4 certificates.
         //    We then tell jsPDF to use the LOGICAL canvas size (not 3× pixel size)
         //    so the PDF page is the right dimensions and the image fills it exactly.
+        log("Exporting canvas to PNG");
         const MULTIPLIER = 3;
         const pngDataUrl = fCanvas.toDataURL({ format: "png", multiplier: MULTIPLIER });
 
         // 9. Convert PNG to PDF — use logical canvas dimensions for page size.
+        log("Creating PDF");
         const pdf = new jsPDF({
           orientation: size.w > size.h ? "l" : "p",
           unit: "px",
@@ -190,6 +202,7 @@ export default function Generate() {
         const pdfBlob   = pdf.output("blob");
 
         // 10. Save certificate record to Firestore
+        log("Saving to Firestore");
         await setDoc(doc(db, "certificates", certId), {
           certId,
           recipientName,
@@ -207,8 +220,10 @@ export default function Generate() {
         generated.push({ name: recipientName, certId, pdfDataUrl, pdfBlob, verifyUrl, pngDataUrl, recipientData: recipient });
 
       } catch (err) {
-        console.error(`Error generating for ${recipientName}:`, err);
-        generated.push({ name: recipientName, certId: null, pdfDataUrl: null, error: true });
+        const msg = err?.message || String(err);
+        console.error(`[Generate] FAILED ${recipientName}: ${msg}`);
+        // Surface first few chars of error to UI for quick diagnosis
+        generated.push({ name: recipientName, certId: null, pdfDataUrl: null, error: true, errorMsg: msg.slice(0, 120) });
       }
     }
 
@@ -547,7 +562,9 @@ export default function Generate() {
                   )}
 
                   {cert.error && (
-                    <div className="cert-error-msg">&#9888; Failed to generate</div>
+                    <div className="cert-error-msg" title={cert.errorMsg || ""}>
+                      &#9888; Failed: {cert.errorMsg || "Unknown error"}
+                    </div>
                   )}
 
                   <div className="cert-info">

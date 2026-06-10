@@ -432,7 +432,10 @@ export default function Customize() {
     const uniquePlaceholders = [...new Map(placeholders.map(p => [p.key, p])).values()];
 
     // Serialize canvas — preserve isNameZone and isQRZone custom properties
-    const canvasJSON = canvas.toJSON(["fieldKey", "fieldLabel", "isNameZone", "isQRZone"]);
+    // CRITICAL: Strip backgroundImage from JSON to avoid data URL bloat in localStorage.
+    // The template URL is stored separately as cp_template_url and re-applied during generation.
+    const cleanJSON = canvas.toJSON(["fieldKey", "fieldLabel", "isNameZone", "isQRZone"]);
+    delete cleanJSON.backgroundImage;
 
     // Save QR zone position from the placed rect object
     const qrObj = canvas.getObjects().find(o => o.isQRZone);
@@ -447,10 +450,18 @@ export default function Customize() {
       localStorage.removeItem("cp_qr_zone"); // No QR zone = use default
     }
 
-    // Save to localStorage
-    localStorage.setItem("cp_canvas_config", JSON.stringify(canvasJSON));
-    localStorage.setItem("cp_placeholders", JSON.stringify(uniquePlaceholders));
-    localStorage.setItem("cp_canvas_size", canvasSize);
+    // Save to localStorage — wrap in try-catch to detect quota overflow
+    try {
+      const jsonStr = JSON.stringify(cleanJSON);
+      if (jsonStr.length > 4 * 1024 * 1024) {
+        return setError("Canvas data is too large (over 4MB). Try using a smaller template image or fewer objects.");
+      }
+      localStorage.setItem("cp_canvas_config", jsonStr);
+      localStorage.setItem("cp_placeholders", JSON.stringify(uniquePlaceholders));
+      localStorage.setItem("cp_canvas_size", canvasSize);
+    } catch (e) {
+      return setError("Failed to save canvas data. The template image may be too large. Try a smaller image.");
+    }
 
     navigate("/recipients");
   };
