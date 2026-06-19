@@ -22,16 +22,16 @@ export default function Auth() {
     if (user) navigate("/home");
   }, [user, navigate]);
 
-  const [tab, setTab]                     = useState("login");
-  const [name, setName]                   = useState("");
-  const [email, setEmail]                 = useState("");
-  const [password, setPassword]           = useState("");
+  const [tab, setTab] = useState("login");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading]             = useState(false);
-  const [error, setError]                 = useState("");
-  const [success, setSuccess]             = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [verifyEmailSent, setVerifyEmailSent] = useState(false);
-  const [showPass, setShowPass]           = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
   const clearMessages = () => { setError(""); setSuccess(""); };
 
@@ -40,8 +40,8 @@ export default function Auth() {
     e.preventDefault();
     clearMessages();
 
-    if (!name.trim())              return setError("Please enter your full name.");
-    if (password.length < 6)      return setError("Password must be at least 6 characters.");
+    if (!name.trim()) return setError("Please enter your full name.");
+    if (password.length < 6) return setError("Password must be at least 6 characters.");
     if (password !== confirmPassword) return setError("Passwords do not match.");
 
     setLoading(true);
@@ -49,24 +49,24 @@ export default function Auth() {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await sendEmailVerification(cred.user);
       await setDoc(doc(db, "users", cred.user.uid), {
-        name:              name.trim(),
-        email:             email.toLowerCase(),
-        photoURL:          "",
-        organization:      "",
+        name: name.trim(),
+        email: email.toLowerCase(),
+        photoURL: "",
+        organization: "",
         totalCertificates: 0,
-        totalRecipients:   0,
-        createdAt:         serverTimestamp(),
-        lastLogin:         serverTimestamp(),
+        totalRecipients: 0,
+        createdAt: serverTimestamp(),
+        lastLogin: serverTimestamp(),
       });
       setVerifyEmailSent(true);
     } catch (err) {
       console.error("Signup error:", err.code, err.message);
       const msgs = {
-        "auth/email-already-in-use":    "An account with this email already exists. Please log in.",
-        "auth/invalid-email":           "Please enter a valid email address.",
-        "auth/weak-password":           "Password is too weak. Use at least 6 characters.",
-        "auth/network-request-failed":  "Network error. Check your internet connection.",
-        "auth/operation-not-allowed":   "Email/Password sign-in is not enabled. Enable it in Firebase Console > Authentication > Sign-in method.",
+        "auth/email-already-in-use": "An account with this email already exists. Please log in.",
+        "auth/invalid-email": "Please enter a valid email address.",
+        "auth/weak-password": "Password is too weak. Use at least 6 characters.",
+        "auth/network-request-failed": "Network error. Check your internet connection.",
+        "auth/operation-not-allowed": "Email/Password sign-in is not enabled. Enable it in Firebase Console > Authentication > Sign-in method.",
         "auth/api-key-not-valid.-please-pass-a-valid-api-key.": "Your Firebase API key in .env is invalid. Go to Firebase Console > Project Settings > copy the correct apiKey.",
       };
       setError(msgs[err.code] || `Error [${err.code}]: ${err.message}`);
@@ -90,29 +90,29 @@ export default function Auth() {
       }
 
       const userRef = doc(db, "users", cred.user.uid);
-      const snap    = await getDoc(userRef);
+      const snap = await getDoc(userRef);
       if (snap.exists()) {
         await setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true });
       } else {
         await setDoc(userRef, {
-          name:              cred.user.displayName || email.split("@")[0],
-          email:             email.toLowerCase(),
-          photoURL:          "",
-          organization:      "",
+          name: cred.user.displayName || email.split("@")[0],
+          email: email.toLowerCase(),
+          photoURL: "",
+          organization: "",
           totalCertificates: 0,
-          totalRecipients:   0,
-          createdAt:         serverTimestamp(),
-          lastLogin:         serverTimestamp(),
+          totalRecipients: 0,
+          createdAt: serverTimestamp(),
+          lastLogin: serverTimestamp(),
         });
       }
       navigate("/home");
     } catch (err) {
       console.error("Login error:", err.code, err.message);
       const msgs = {
-        "auth/user-not-found":      "No account found with this email.",
-        "auth/wrong-password":      "Incorrect password.",
-        "auth/invalid-credential":  "Incorrect email or password.",
-        "auth/too-many-requests":   "Too many failed attempts. Try again later.",
+        "auth/user-not-found": "No account found with this email.",
+        "auth/wrong-password": "Incorrect password.",
+        "auth/invalid-credential": "Incorrect email or password.",
+        "auth/too-many-requests": "Too many failed attempts. Try again later.",
         "auth/network-request-failed": "Network error. Check your internet connection.",
         "auth/api-key-not-valid.-please-pass-a-valid-api-key.": "Your Firebase API key in .env is invalid. Please fix it.",
       };
@@ -139,8 +139,8 @@ export default function Auth() {
       setSuccess(`Password reset email sent to ${email}. Check your inbox!`);
     } catch (err) {
       const msgs = {
-        "auth/user-not-found":   "No account found with this email address.",
-        "auth/invalid-email":    "Please enter a valid email address.",
+        "auth/user-not-found": "No account found with this email address.",
+        "auth/invalid-email": "Please enter a valid email address.",
         "auth/network-request-failed": "Network error. Check your internet connection.",
       };
       setError(msgs[err.code] || `Reset failed: ${err.message}`);
@@ -223,7 +223,7 @@ export default function Auth() {
               onClick={() => { setTab("signup"); clearMessages(); }}>Sign Up</button>
           </div>
 
-          {error   && <div className="auth-alert auth-alert-error">&#9888; {error}</div>}
+          {error && <div className="auth-alert auth-alert-error">&#9888; {error}</div>}
           {success && <div className="auth-alert auth-alert-success">&#10003; {success}</div>}
 
           {/* LOGIN FORM */}
