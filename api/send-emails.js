@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "POST")   return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const {
     recipients,     // [{ name, email, certId, verifyUrl }]
@@ -29,9 +29,9 @@ export default async function handler(req, res) {
   } = req.body;
 
   // Validate required fields
-  if (!recipients?.length)  return res.status(400).json({ error: "No recipients provided." });
-  if (!senderEmail)         return res.status(400).json({ error: "Sender email is required." });
-  if (!senderPassword)      return res.status(400).json({ error: "App password is required." });
+  if (!recipients?.length) return res.status(400).json({ error: "No recipients provided." });
+  if (!senderEmail) return res.status(400).json({ error: "Sender email is required." });
+  if (!senderPassword) return res.status(400).json({ error: "App password is required." });
 
   // ── Detect SMTP config ──────────────────────────────────────────────────
 
@@ -42,18 +42,18 @@ export default async function handler(req, res) {
   if (customHost) {
     // User manually entered their SMTP host (Advanced Settings)
     smtpConfig = {
-      host:   customHost,
-      port:   customPort || 587,
+      host: customHost,
+      port: customPort || 587,
       secure: customPort === 465,
-      auth:   { user: senderEmail, pass: senderPassword },
-      tls:    { rejectUnauthorized: false },
+      auth: { user: senderEmail, pass: senderPassword },
+      tls: { rejectUnauthorized: false },
     };
   } else if (domain === "gmail.com" || domain === "googlemail.com") {
-    smtpConfig = { service: "gmail",   auth: { user: senderEmail, pass: senderPassword } };
-  } else if (["outlook.com","hotmail.com","live.com","msn.com"].includes(domain)) {
+    smtpConfig = { service: "gmail", auth: { user: senderEmail, pass: senderPassword } };
+  } else if (["outlook.com", "hotmail.com", "live.com", "msn.com"].includes(domain)) {
     smtpConfig = { service: "hotmail", auth: { user: senderEmail, pass: senderPassword } };
   } else if (domain === "yahoo.com" || domain === "yahoo.in") {
-    smtpConfig = { service: "yahoo",   auth: { user: senderEmail, pass: senderPassword } };
+    smtpConfig = { service: "yahoo", auth: { user: senderEmail, pass: senderPassword } };
   } else if (domain === "zoho.com") {
     smtpConfig = { host: "smtp.zoho.com", port: 587, secure: false, auth: { user: senderEmail, pass: senderPassword } };
   } else {
@@ -61,11 +61,11 @@ export default async function handler(req, res) {
     // e.g. events@bits.edu → smtp.bits.edu
     // If this fails, the user can use "Advanced Settings" in the modal to set it manually
     smtpConfig = {
-      host:   `smtp.${domain}`,
-      port:   587,
+      host: `smtp.${domain}`,
+      port: 587,
       secure: false,
-      auth:   { user: senderEmail, pass: senderPassword },
-      tls:    { rejectUnauthorized: false },
+      auth: { user: senderEmail, pass: senderPassword },
+      tls: { rejectUnauthorized: false },
     };
   }
 
@@ -90,8 +90,8 @@ export default async function handler(req, res) {
 
     try {
       await transporter.sendMail({
-        from:    `"${issuerName || "CertifyPro"}" <${senderEmail}>`,
-        to:      r.email,
+        from: `"${issuerName || "CertifyPro"}" <${senderEmail}>`,
+        to: r.email,
         subject: `Your Certificate — ${eventName || "Certificate"}`,
         html: `
 <!DOCTYPE html><html><head><meta charset="UTF-8"></head>
